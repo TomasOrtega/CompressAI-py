@@ -48,7 +48,7 @@ except ImportError:
     pass
 
 _entropy_coder = "ans"
-_available_entropy_coders = [_entropy_coder]
+# _available_entropy_coders = ["ans"]  # Only Python ANS available
 
 try:
     import range_coder

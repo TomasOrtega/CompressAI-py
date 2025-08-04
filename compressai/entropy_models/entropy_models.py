@@ -39,8 +39,51 @@ import torch.nn.functional as F
 
 from torch import Tensor
 
-from compressai._CXX import pmf_to_quantized_cdf as _pmf_to_quantized_cdf
 from compressai.ops import LowerBound
+
+
+def _pmf_to_quantized_cdf(pmf, precision):
+    """Pure Python implementation of pmf_to_quantized_cdf"""
+    import numpy as np
+    
+    # Validate input
+    for p in pmf:
+        if p < 0 or not np.isfinite(p):
+            raise ValueError(f"Invalid pmf, non-finite or negative element found: {p}")
+    
+    # Scale PMF by precision
+    scaled_pmf = [round(p * (1 << precision)) for p in pmf]
+    total = sum(scaled_pmf)
+    
+    if total == 0:
+        raise ValueError("Invalid pmf: at least one element must have a non-zero probability.")
+    
+    # Normalize
+    normalized_pmf = [int((1 << precision) * p / total) for p in scaled_pmf]
+    
+    # Create CDF
+    cdf = [0]
+    for p in normalized_pmf:
+        cdf.append(cdf[-1] + p)
+    
+    # Ensure CDF ends at 2^precision
+    cdf[-1] = 1 << precision
+    
+    # Fix any zero-probability symbols
+    for i in range(len(cdf) - 1):
+        if cdf[i] == cdf[i + 1]:
+            # Steal frequency from other symbols
+            for j in range(len(cdf) - 1):
+                if cdf[j + 1] - cdf[j] > 1:
+                    if j < i:
+                        for k in range(j + 1, i + 1):
+                            cdf[k] -= 1
+                    else:
+                        for k in range(i + 1, j + 1):
+                            cdf[k] += 1
+                    break
+    
+    return cdf
 
 
 class _EntropyCoder:
@@ -59,7 +102,7 @@ class _EntropyCoder:
             )
 
         if method == "ans":
-            from compressai import ans
+            from compressai import ans_py as ans
 
             encoder = ans.RansEncoder()
             decoder = ans.RansDecoder()

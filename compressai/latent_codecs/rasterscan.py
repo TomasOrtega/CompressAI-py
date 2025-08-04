@@ -35,7 +35,7 @@ import torch.nn.functional as F
 
 from torch import Tensor
 
-from compressai.ans import BufferedRansEncoder, RansDecoder
+from compressai.ans_py import BufferedRansEncoder, RansDecoder
 from compressai.entropy_models import GaussianConditional
 from compressai.layers import MaskedConv2d
 from compressai.registry import register_module
