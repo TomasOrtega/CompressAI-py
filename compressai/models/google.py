@@ -33,7 +33,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from compressai.ans import BufferedRansEncoder, RansDecoder
 from compressai.entropy_models import EntropyBottleneck, GaussianConditional
 from compressai.layers import GDN, MaskedConv2d
 from compressai.registry import register_model

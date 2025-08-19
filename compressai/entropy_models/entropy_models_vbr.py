@@ -41,9 +41,7 @@ from torch import Tensor
 from compressai.ops import LowerBound
 
 from .entropy_models import (
-    _EntropyCoder,
     _forward,
-    default_entropy_coder,
     pmf_to_quantized_cdf,
 )
 
